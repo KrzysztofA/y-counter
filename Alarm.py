@@ -5,10 +5,17 @@ from tkinter import ttk
 
 import simpleaudio
 
+default_sound = "neraton.mp3"
+
 
 class Alarm:
-    def __init__(self, sound_file="neraton.mp3", parent=None, mode="OR", counter=-1, time=-1):
-        self.tune = pydub.AudioSegment.from_mp3(sound_file)
+    def __init__(self, sound_file="neraton.mp3", parent=None, mode="OR", counter=0, time=0):
+        print(sound_file)
+        try:
+            self.tune = pydub.AudioSegment.from_mp3(sound_file)
+        except Exception as e:
+            print(e)
+            self.tune = pydub.AudioSegment.from_mp3(default_sound)
         self.playback: any = None
         self.parent = parent
         self.counter = counter
@@ -21,11 +28,11 @@ class Alarm:
     def update(self, count, time):
         if self.finished:
             return
-        if self.counter != -1 and count >= self.counter:
+        if self.counter != 0 and count >= self.counter:
             self.count_reached = True
-        if self.time != -1 and time >= self.time:
+        if self.time != 0 and time >= self.time:
             self.time_reached = True
-        if self.time != -1 and self.counter != -1:
+        if self.time != 0 and self.counter != 0:
             if self.mode == "OR":
                 if self.count_reached or self.time_reached:
                     self.play()
@@ -49,7 +56,7 @@ class Alarm:
         )
         popup = Toplevel(self.parent)
         popup.title = "Alarm"
-        ttk.Label(popup, text=f"{f"Counter of {self.counter} " if self.counter != -1 else ""}{f"{self.mode} " if self.time != -1 and self.counter != -1 else ""}{f"Time of {self.time}" if self.time != -1 else ""} reached!").pack()
+        ttk.Label(popup, text=f"{f"Counter of {self.counter} " if self.counter != 0 else ""}{f"{self.mode} " if self.time != 0 and self.counter != 0 else ""}{f"Time of {self.time}" if self.time != 0 else ""} reached!").pack()
 
         def popup_destroy_close():
             popup.destroy()

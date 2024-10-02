@@ -1,4 +1,5 @@
 import json
+import math
 import statistics
 from datetime import datetime
 from tkinter import *
@@ -7,6 +8,7 @@ from tkinter.ttk import *
 import re
 
 from Alarm import Alarm
+from AlarmCreator import AlarmCreator
 
 
 class Application:
@@ -44,7 +46,7 @@ class Application:
         def update_time():
             self.delta = (datetime.now() - self.start).total_seconds()
             delta = self.sum + self.delta
-            timeval.set(f"{int(delta/3600):02d}:{int(delta/60):02d}:{int(delta % 60):02d}")
+            timeval.set(f"{math.floor(delta/3600):02d}:{int(math.floor(delta/60) % 60):02d}:{int(delta % 60):02d}")
             self.timer = app.after(1000, update_time)
             for i in self.alarms:
                 i.update(self.var.get(), self.sum + self.delta)
@@ -57,6 +59,7 @@ class Application:
                 btn.config(state=DISABLED)
                 self.pause_btn.config(image=self.start_img)
                 self.sum += self.delta
+                self.delta = 0
                 app.after_cancel(self.timer)
             else:
                 btn.config(state=NORMAL)
@@ -69,10 +72,10 @@ class Application:
             if self.var.get() > 0:
                 with open(f"{int(self.delta * 10000 + self.sum)}{re.sub(r"\W", "", f"{datetime.now()}")}.txt", "w+") as file:
                     file.write(f"Count: {self.var.get()}\n")
-                    file.write(f"Time Taken: {self.delta}\n\n")
+                    file.write(f"Time Taken: {self.delta + self.sum}\n\n")
                     file.write(f"Times:\n{"\n".join([f"{i}" for i in self.deltas])}\n\n")
                     file.write("Stats:\n")
-                    file.write(f"Mean: {self.delta/self.var.get()}\n")
+                    file.write(f"Mean: {(self.delta + self.sum)/self.var.get()}\n")
                     per_item_deltas = [self.deltas[0] if len(self.deltas) > 0 else 0]
                     for i in range(1, len(self.deltas)):
                         per_item_deltas.append(self.deltas[i] - self.deltas[i-1])
@@ -82,6 +85,7 @@ class Application:
                     file.write(f"Mean: {statistics.mean(per_item_deltas)}\n")
                     file.write(f"Median: {statistics.median(per_item_deltas)}\n")
             self.delta = 0
+            self.sum = 0
             self.deltas = []
             self.var.set(0)
             timeval.set('00:00:00')
@@ -106,7 +110,7 @@ class Application:
                     self.delta = (datetime.now() - self.start).total_seconds()
                     delta = self.sum + self.delta
                     self.deltas = json_data["deltas"]
-                    timeval.set(f"{int(delta / 3600):02d}:{int(delta / 60):02d}:{int(delta % 60):02d}")
+                    timeval.set(f"{int(delta / 3600):02d}:{int((delta / 60) % 60):02d}:{int(delta % 60):02d}")
 
         self.menu_bar = Menu(app)
         self.file_menu = Menu(self.menu_bar, tearoff=0)
@@ -127,6 +131,7 @@ class Application:
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
         self.menu_bar.add_separator()
         self.menu_bar.add_cascade(label="Settings", menu=self.settings_menu)
+        self.settings_menu.add_command(label="Add Alarm", command=lambda: AlarmCreator(self, app))
         Label(app, textvariable=timeval).grid(column=0, row=2, columnspan=2)
         app.config(menu=self.menu_bar)
         self.pause_btn = Button(app, image=self.pause_img, command=pause_resume)
@@ -139,6 +144,9 @@ class Application:
         app.update()
 
         app.mainloop()
+
+    def add_alarm(self, alarm: Alarm):
+        self.alarms.append(alarm)
 
 
 Application()
