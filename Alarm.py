@@ -1,3 +1,5 @@
+import json
+
 import pydub
 
 from tkinter import *
@@ -10,12 +12,11 @@ default_sound = "neraton.mp3"
 
 class Alarm:
     def __init__(self, sound_file="neraton.mp3", parent=None, mode="OR", counter=0, time=0):
-        print(sound_file)
         try:
             self.tune = pydub.AudioSegment.from_mp3(sound_file)
-        except Exception as e:
-            print(e)
+        except:
             self.tune = pydub.AudioSegment.from_mp3(default_sound)
+        self.sound_file = sound_file
         self.playback: any = None
         self.parent = parent
         self.counter = counter
@@ -64,3 +65,22 @@ class Alarm:
 
         ttk.Button(popup, text="Ok", command=popup_destroy_close).pack()
         popup.protocol("WM_DELETE_WINDOW", self.popup_close)
+
+    def save(self):
+        if not self.finished:
+            return { 'count': self.counter, 'mode': self.mode, 'time': self.time, 'time_reached': self.time_reached, 'count_reached': self.count_reached, 'sound_file': self.sound_file }
+        else:
+            return None
+
+    @staticmethod
+    def load(jsonobj, parent=None):
+        counter = jsonobj['count']
+        mode = jsonobj['mode']
+        time = jsonobj['time']
+        time_reached = jsonobj['time_reached']
+        count_reached = jsonobj['count_reached']
+        sound_file = jsonobj['sound_file']
+        temp = Alarm(sound_file, parent, mode, counter, time)
+        temp.count_reached = count_reached
+        temp.time_reached = time_reached
+        return temp
