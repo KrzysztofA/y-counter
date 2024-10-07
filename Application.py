@@ -15,6 +15,8 @@ from AlarmCreator import AlarmCreator
 class Application:
     def __init__(self):
         self.app = Tk()
+        s = Style()
+        s.theme_use("winnative")
         self.timer = ""
         self.delta = 0
         self.deltas = []
@@ -23,20 +25,21 @@ class Application:
         self.alarms = []
         self.var = IntVar(self.app, 0, "count")
         self.timeval = StringVar(self.app, value="00:00:00", name="total time")
+        self.frame = Frame(self.app)
+        self.frame.pack()
+        Label(self.frame, textvariable=self.var).grid(column=0, row=1)
+        self.stop_img = PhotoImage(file="Icons/icons8-stop-30.png")
+        self.pause_img = PhotoImage(file="Icons/icons8-pause-30.png")
+        self.start_img = PhotoImage(file="Icons/icons8-start-30.png")
+        self.plus_img = PhotoImage(file="Icons/icons8-plus-30.png")
 
-        Label(self.app, textvariable=self.var).grid(column=0, row=1)
-        self.stop_img = PhotoImage(file="icons8-stop-30.png")
-        self.pause_img = PhotoImage(file="icons8-pause-30.png")
-        self.start_img = PhotoImage(file="icons8-start-30.png")
-        self.plus_img = PhotoImage(file="icons8-plus-30.png")
-
-        self.btn = Button(self.app, image=self.plus_img, command=self.add)
+        self.btn = Button(self.frame, image=self.plus_img, command=self.add)
         self.btn.grid(column=1, row=1)
 
-        self.menu_bar = Menu(self.app)
+        self.menu_bar = Menu(self.frame)
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.settings_menu = Menu(self.menu_bar, tearoff=0)
-        self.bool_var = BooleanVar(self.app, value=True)
+        self.bool_var = BooleanVar(self.frame, value=True)
 
         self.settings_menu.add_checkbutton(label="Always on top", variable=self.bool_var, onvalue=True, offvalue=False, command=self.set_always_on_top)
         self.file_menu.add_command(label="Save", command=self.save)
@@ -45,12 +48,12 @@ class Application:
         self.menu_bar.add_separator()
         self.menu_bar.add_cascade(label="Settings", menu=self.settings_menu)
         self.settings_menu.add_command(label="Add Alarm", command=lambda: AlarmCreator(self, self.app))
-        Label(self.app, textvariable=self.timeval).grid(column=0, row=2, columnspan=2)
+        Label(self.frame, textvariable=self.timeval).grid(column=0, row=2, columnspan=2)
         self.app.config(menu=self.menu_bar)
-        self.pause_btn = Button(self.app, image=self.pause_img, command=self.pause_resume)
+        self.pause_btn = Button(self.frame, image=self.pause_img, command=self.pause_resume)
         self.pause_btn.grid(column=0, row=3)
 
-        Button(self.app, image=self.stop_img, command=self.stop).grid(column=1, row=3)
+        Button(self.frame, image=self.stop_img, command=self.stop).grid(column=1, row=3)
         self.app.minsize(80, 100)
         self.app.maxsize(250, 150)
         self.app.attributes('-topmost', True)
